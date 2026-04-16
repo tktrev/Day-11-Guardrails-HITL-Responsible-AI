@@ -1,7 +1,7 @@
 # Individual Report: Defense-in-Depth Pipeline
 
 **Course:** AICB-P1 — AI Agent Development
-**Student:** [Your Name]
+**Student:** Trần Kiên Trường 2A202600496
 **Date:** April 2026
 
 ---
