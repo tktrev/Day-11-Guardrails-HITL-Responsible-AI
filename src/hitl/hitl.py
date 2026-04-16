@@ -84,13 +84,41 @@ class ConfidenceRouter:
         #      action="escalate", priority="high",
         #      requires_human=True, reason="Low confidence — escalating"
 
-        return RoutingDecision(
-            action="auto_send",
-            confidence=confidence,
-            reason="TODO: implement routing logic",
-            priority="low",
-            requires_human=False,
-        )  # TODO: Replace with implementation
+        # 1. Check if action_type is in HIGH_RISK_ACTIONS
+        if action_type in HIGH_RISK_ACTIONS:
+            return RoutingDecision(
+                action="escalate",
+                confidence=confidence,
+                reason=f"High-risk action: {action_type}",
+                priority="high",
+                requires_human=True,
+            )
+
+        # 2. Check confidence thresholds
+        if confidence >= self.HIGH_THRESHOLD:
+            return RoutingDecision(
+                action="auto_send",
+                confidence=confidence,
+                reason="High confidence",
+                priority="low",
+                requires_human=False,
+            )
+        elif confidence >= self.MEDIUM_THRESHOLD:
+            return RoutingDecision(
+                action="queue_review",
+                confidence=confidence,
+                reason="Medium confidence — needs review",
+                priority="normal",
+                requires_human=True,
+            )
+        else:
+            return RoutingDecision(
+                action="escalate",
+                confidence=confidence,
+                reason="Low confidence — escalating",
+                priority="high",
+                requires_human=True,
+            )
 
 
 # ============================================================
@@ -109,27 +137,27 @@ class ConfidenceRouter:
 hitl_decision_points = [
     {
         "id": 1,
-        "name": "TODO: Name this decision point",
-        "trigger": "TODO: When does this trigger?",
-        "hitl_model": "TODO: human-in-the-loop / human-on-the-loop / human-as-tiebreaker",
-        "context_needed": "TODO: What does the reviewer need to see?",
-        "example": "TODO: Give a concrete example scenario",
+        "name": "Large Money Transfer Approval",
+        "trigger": "Customer requests a transfer exceeding 50 million VND",
+        "hitl_model": "human-in-the-loop",
+        "context_needed": "Customer identity verification, transfer destination, transaction history, any flags from fraud detection",
+        "example": "Customer asks to transfer 100 million VND to an unfamiliar account. Human reviewer checks if this is a legitimate transaction or potential fraud.",
     },
     {
         "id": 2,
-        "name": "TODO: Name this decision point",
-        "trigger": "TODO: When does this trigger?",
-        "hitl_model": "TODO: human-in-the-loop / human-on-the-loop / human-as-tiebreaker",
-        "context_needed": "TODO: What does the reviewer need to see?",
-        "example": "TODO: Give a concrete example scenario",
+        "name": "Account Closure with Balance",
+        "trigger": "Customer requests account closure when account has remaining balance",
+        "hitl_model": "human-on-the-loop",
+        "context_needed": "Account balance, reason for closure, outstanding obligations, customer tenure",
+        "example": "Customer with 10-year account history and 200 million VND balance requests closure. Human reviews reason and ensures fund transfer is properly handled.",
     },
     {
         "id": 3,
-        "name": "TODO: Name this decision point",
-        "trigger": "TODO: When does this trigger?",
-        "hitl_model": "TODO: human-in-the-loop / human-on-the-loop / human-as-tiebreaker",
-        "context_needed": "TODO: What does the reviewer need to see?",
-        "example": "TODO: Give a concrete example scenario",
+        "name": "Loan Application with Exception Request",
+        "trigger": "Customer applies for loan but fails standard credit criteria and requests exception",
+        "hitl_model": "human-as-tiebreaker",
+        "context_needed": "Credit score, income verification, debt-to-income ratio, reason for exception request, supporting documents",
+        "example": "Customer applies for 500 million VND home loan but has thin credit file. AI recommends denial, customer appeals requesting manual review. Human makes final decision.",
     },
 ]
 
